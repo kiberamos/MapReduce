@@ -33,7 +33,7 @@ public class Util {
      * @param linea 
      */
     public static void println(String linea){
-        System.out.print(linea);
+        System.out.println(linea);
     }
     /**
      * Imprime en pantalla
@@ -53,7 +53,7 @@ public class Util {
      * @param palabra_limpiar
      * @return 
      */
-    private String limpiarFormato(String palabra_limpiar){
+    public static String limpiarFormato(String palabra_limpiar){
         Pattern p = Pattern.compile("[^a-zA-Z0-9']");
         Matcher m = p.matcher(palabra_limpiar);
         return m.replaceAll("").toLowerCase();

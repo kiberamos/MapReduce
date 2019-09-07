@@ -31,7 +31,10 @@ public class MapReduce {
      */
     static int numeroArchivosGenerados = 0;
     final static int NUMERO_PARRAFOS = 25;
+    static int FALLOS_MAP = 2;
+    public static int SEGUNDOS_DE_FALLO = 2;
 
+    static Map[] maps;
     /**
      * @param args the command line arguments
      */
@@ -40,9 +43,7 @@ public class MapReduce {
         leer("texto3.txt");
         Util.println("Se han creado  Reducers");
         System.out.println("--->"+archivosPath);        
-        for (int i = 0; i < archivosPath.size() ; i++) {
-            
-        }
+        crearHilosMap();
     }
 
     private static void crearHilosReducers() {
@@ -51,9 +52,11 @@ public class MapReduce {
     
     }
      private static void crearHilosMap() {
+        maps = new Map[numeroArchivosGenerados];
 
-        Map m = new Map();
-
+        for (int i = 0; i < numeroArchivosGenerados; i++)
+            maps[i] = new Map(fallosMap(), archivosPath.get(i), i + 1);
+        iniciarHilos(maps);
     }
      private static void leer(String path) {
 
@@ -107,6 +110,20 @@ public class MapReduce {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+     
+     private static boolean fallosMap() {
+
+        if (FALLOS_MAP > 0) {
+            FALLOS_MAP--;
+            return false;
+        } else return true;
+
+    }
+     
+     private static void iniciarHilos(Thread[] hilos) {
+        for (int i = 0; i < hilos.length; i++)
+            hilos[i].start();
     }
     
 }
