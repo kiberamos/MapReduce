@@ -37,11 +37,12 @@ public class MapReduce {
      */
     
     public static void main(String[] args) throws InterruptedException {
-
+        leer("texto3.txt");
         Util.println("Se han creado  Reducers");
-        crearHilosMap();
-        
-
+        System.out.println("--->"+archivosPath);        
+        for (int i = 0; i < archivosPath.size() ; i++) {
+            
+        }
     }
 
     private static void crearHilosReducers() {
