@@ -31,7 +31,7 @@ public class Map extends Thread {
 
 
     private String path;
-    private String pathMap ;
+    private String [] pathMap = new String[2];
     private List<String> listaPalabras = new ArrayList<String>();
     private int idMap = -888;
 
@@ -92,20 +92,23 @@ public class Map extends Thread {
     private void escribir(){
 
         try {
-            File tempFile = File.createTempFile("Mapper"+idMap+ idMap,".txt", Paths.get("temp").toFile());
-            
+            File tempFile = File.createTempFile("Mapper0"+idMap+"_A-M_" + idMap,".txt", Paths.get("temp").toFile());
+            File tempFile2 = File.createTempFile("Mapper0"+idMap+"_N-Z_" + idMap,".txt", Paths.get("temp").toFile());
+
             FileWriter archivoWriter = new FileWriter(tempFile);
-            
+            FileWriter archivoWriter2 = new FileWriter(tempFile2);
 
             for (int i =0; i < listaPalabras.size(); i++){
-               
-               archivoWriter.write(listaPalabras.get(i)+"\t"+1+",");
-               
+                if ((listaPalabras.get(i).compareToIgnoreCase("m") <= 0)) {
+                    archivoWriter.write(listaPalabras.get(i)+"\t"+1+",");
+                } else {
+                    archivoWriter2.write(listaPalabras.get(i)+"\t"+1+",");
+                }
             }
             archivoWriter.close();
-            
-            pathMap = tempFile.getPath();
-            Util.println("TERMINO UN HILO Mapper0"+idMap);
+            archivoWriter2.close();
+            pathMap[0] = tempFile.getPath();
+            pathMap[1] = tempFile2.getPath();
         } catch (IOException e) {
             e.printStackTrace();
 
@@ -122,7 +125,7 @@ public class Map extends Thread {
         return idMap;
     }
 
-    public String getPathMap() {
+    public String[] getPathMap() {
         return pathMap;
     }
 
