@@ -12,6 +12,7 @@ import java.io.IOException;
 import static java.lang.Thread.sleep;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
@@ -38,6 +39,10 @@ public class MapReduce {
 
     static Map[] maps;
     static Reduce[] reduces;
+    
+    
+    static boolean END_MAPPERS = false;
+    static boolean END_REDUCERS = false;
     /**
      * @param args the command line arguments
      */
@@ -49,7 +54,83 @@ public class MapReduce {
         crearHilosMap();
         crearHilosReducers();
 
-        
+        int contador_mappers = 0, contador_reducers = 0;
+
+        while (!END_MAPPERS || !END_REDUCERS) {
+
+            for (int i = 0; i < maps.length; i++) {
+                if (maps[i].ESTADO == 2 && !maps[i].LEIDO) {
+
+                    System.out.println("\n\n[Mapper-0" + maps[i].getIdMap() + "]: TERMINÓ:");
+                    System.out.println("RESULTADO: [Mapper-0" + maps[i].getIdMap() + "]: *** " + maps[i].getPathMap()[0]);
+                    System.out.println("RESULTADO: [Mapper-0" + maps[i].getIdMap() + "]: *** " + maps[i].getPathMap()[1]+"\n\n");
+                    maps[i].imprimirResultado();
+                    maps[i].LEIDO = true;
+                    contador_mappers++;
+                    sleep(SEGUNDOS_DE_FALLO*1000);
+
+                    for (int j = 0; j < reduces.length / 2; j++) {
+                        if (reduces[j].getCantidadMappers() < 2 * NUMERO_MAPPERS_POR_REDUCER && reduces[j] != null) {
+                            reduces[j].setPath(maps[i].getPathMap()[0]);
+
+                            j = reduces.length;
+                        } else {
+                            if (reduces[j].getState() == Thread.State.NEW) {
+                                System.out.println("\n\nSE HA ASIGNADO A Reducer-0" + reduces[j].getIdReducer() + ":");
+                                for (int k = 0; k < reduces[j].getPath().size(); k++)
+                                    System.out.println("[File](" + (k + 1) + "):" + reduces[j].getPath().get(k));
+                                sleep(SEGUNDOS_DE_FALLO*1000);
+                                reduces[j].start();
+                            }
+                        }
+                    }
+                    for (int j = reduces.length / 2; j < reduces.length; j++) {
+                        if (reduces[j].getCantidadMappers() < 2 * NUMERO_MAPPERS_POR_REDUCER && reduces[j] != null) {
+                            reduces[j].setPath(maps[i].getPathMap()[1]);
+
+                            j = reduces.length;
+                        } else {
+                            if (reduces[j].getState() == Thread.State.NEW) {
+                                System.out.println("\n\nSE HA ASIGNADO A Reducer-0" + reduces[j].getIdReducer() + ":");
+                                for (int k = 0; k < reduces[j].getPath().size(); k++)
+                                    System.out.println("[File](" + (k + 1) + "):" + reduces[j].getPath().get(k));
+                                sleep(SEGUNDOS_DE_FALLO*1000);
+                                reduces[j].start();
+                            }
+                        }
+                    }
+
+                }
+                sleep(SEGUNDOS_DE_FALLO*1000);
+            }
+            for (int i = 0; i < reduces.length; i++) {
+                if (reduces[i].ESTADO == 2 && !reduces[i].LEIDO) {
+                    System.out.println("\n\n[Reducer-0" + reduces[i].getIdReducer() + "]: TERMINÓ:");
+                   reduces[i].imprimirResultado();
+                    // imprimirLista(reducer[i].getPathReduce(), "Reducer-0"+reducer[i].getIdReducer());
+                    sleep(SEGUNDOS_DE_FALLO*1000);
+//                    System.out.println("RESULTADO: [Reducer-0" + reducer[i].getIdReducer() + "]: *** " + reducer[i].getPathReduce());
+                    reduces[i].LEIDO = true;
+                    contador_reducers++;
+                }
+
+            }
+            if (END_MAPPERS) {
+                for (int i = 0; i < reduces.length; i++) {
+                    if (reduces[i].getState() == Thread.State.NEW) {
+                        System.out.println("\nSE HA ASIGNADO A Reducer-0" + reduces[i].getIdReducer() + ":");
+                        for (int k = 0; k < reduces[i].getPath().size(); k++)
+                            System.out.println("[File](" + (k + 1) + "):" + reduces[i].getPath().get(k));
+                        sleep(SEGUNDOS_DE_FALLO * 1000);
+                        reduces[i].start();
+                    }
+                }
+            }
+
+            END_MAPPERS = contador_mappers == maps.length ? true : false;
+            END_REDUCERS = contador_reducers == reduces.length ? true : false;
+        }
+        combinarFinal();
     }
 
     private static void crearHilosReducers() {
@@ -142,5 +223,88 @@ public class MapReduce {
         for (int i = 0; i < hilos.length; i++)
             hilos[i].start();
     }
-    
+    private static void combinarFinal() {
+
+        List<String> aux = new ArrayList<>();
+
+        for (int i = 0; i < reduces.length; i++)
+            aux.addAll(leerFinal(reduces[i].toString()));
+
+        combinarFinal(aux);
+    }
+    private static List<String> leerFinal(String file) {
+        List<String> a = new ArrayList<>();
+        File archivo = new File(file);
+        Scanner s = null;
+        try {
+            s = new Scanner(archivo);
+            while (s.hasNextLine()) {
+                a.add(s.nextLine());
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            s.close();
+            return a;
+        }
+    }
+
+    private static void combinarFinal(List<String> listaPalabras) {
+        Collections.sort(listaPalabras);
+        List<String> aux = new ArrayList<String>();
+
+        String palabraActual = null, palabra = "";
+        int contador = -1;
+
+        for (int i = 0; i < listaPalabras.size(); i++) {
+            String[] a = listaPalabras.get(i).split("\t");
+
+            palabra = a[0].trim();
+            int frecuencia = Integer.parseInt(a[1].trim());
+
+            if (palabra.equals(palabraActual)) {
+                contador = contador + frecuencia;
+            } else {
+                if (palabraActual == null) {
+                    palabraActual = palabra;
+                    contador = frecuencia;
+
+                } else {
+                    aux.add(String.format("%s\t%d", palabraActual, contador));
+                    palabraActual = palabra;
+                    contador = frecuencia;
+                }
+            }
+
+        }
+        if (palabraActual == palabra) aux.add(String.format("%s\t%d", palabraActual, contador));
+        escribirFinal(aux);
+
+    }
+
+    private static void escribirFinal(List<String> lista) {
+        try {
+            File tempFile = File.createTempFile("MAP-REDUCE", ".txt", Paths.get("resultado").toFile());
+            FileWriter archivoWrite = new FileWriter(tempFile);
+            for (int i = 0; i < lista.size(); i++)
+                archivoWrite.write(lista.get(i) + "\n");
+
+            archivoWrite.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        finally {
+            imprimirFinal(lista);
+        }
+    }
+    public static void imprimirFinal(List<String> lista){
+        String [] aux;
+        System.out.println("\n\nRESULTADO FINAL [MAPREDUCE]: \n");
+        for(int i=0; i < lista.size(); i++){
+            aux = lista.get(i).split("\t");
+            System.out.printf("< %-15s %3d > \t",aux[0], Integer.parseInt(aux[1]));
+            if(i%5 == 4 ){System.out.print("\n");}
+        }
+    }
 }
