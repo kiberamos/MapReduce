@@ -19,7 +19,7 @@ import java.util.Scanner;
  *
  * @author wcade
  */
-public class Reduce extends Thread {
+public class Combine extends Thread {
 
     public  int FLAG=0; // 0 - terminará bien, 1 - tendrá un fallo,
     public  int ESTADO = 0; // 0 - terminó o no ha sido asignado tarea, 1 - en ejecución
@@ -41,7 +41,7 @@ public class Reduce extends Thread {
 
 
 
-    public Reduce(boolean runOk , List<String> path, int id) {
+    public Combine(boolean runOk , List<String> path, int id) {
 
         FLAG = runOk ? 0 : 1;
         this.path = path;
@@ -49,7 +49,7 @@ public class Reduce extends Thread {
         reducerName = "Reducer_"+ idReducer +"_";
         //funcionReducer(path);
     }
-    public Reduce(boolean runOk , int id) {
+    public Combine(boolean runOk , int id) {
 
         FLAG = runOk ? 0 : 1;
         idReducer = id;

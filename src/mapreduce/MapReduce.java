@@ -38,7 +38,7 @@ public class MapReduce {
     public static int SEGUNDOS_DE_FALLO = 2;
 
     static Map[] maps;
-    static Reduce[] reduces;
+    static Combine[] reduces;
     
     
     static boolean END_MAPPERS = false;
@@ -135,9 +135,9 @@ public class MapReduce {
 
     private static void crearHilosReducers() {
         int aux = numeroArchivosGenerados % NUMERO_MAPPERS_POR_REDUCER != 0 ? 1 : 0;
-        reduces = new Reduce[numeroArchivosGenerados / NUMERO_MAPPERS_POR_REDUCER + aux];
+        reduces = new Combine[numeroArchivosGenerados / NUMERO_MAPPERS_POR_REDUCER + aux];
         for (int i = 0; i < reduces.length; i++)
-            reduces[i] = new Reduce(fallosReducer(), i + 1);
+            reduces[i] = new Combine(fallosReducer(), i + 1);
     
     }
      private static void crearHilosMap() {
