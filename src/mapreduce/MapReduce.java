@@ -34,11 +34,11 @@ public class MapReduce {
     final static int NUMERO_PARRAFOS = 50;
     final static int NUMERO_MAPPERS_POR_REDUCER = 3;
     static int FALLOS_MAP = 2;
-    static int FALLOS_REDUCER = 2;
+    static int FALLOS_COMBINE = 2;
     public static int SEGUNDOS_DE_FALLO = 2;
 
     static Map[] maps;
-    static Combine[] reduces;
+    static Combine[] combines;
     
     
     static boolean END_MAPPERS = false;
@@ -69,33 +69,33 @@ public class MapReduce {
                     contador_mappers++;
                     sleep(SEGUNDOS_DE_FALLO*1000);
 
-                    for (int j = 0; j < reduces.length / 2; j++) {
-                        if (reduces[j].getCantidadMappers() < 2 * NUMERO_MAPPERS_POR_REDUCER && reduces[j] != null) {
-                            reduces[j].setPath(maps[i].getPathMap()[0]);
+                    for (int j = 0; j < combines.length / 2; j++) {
+                        if (combines[j].getCantidadMappers() < 2 * NUMERO_MAPPERS_POR_REDUCER && combines[j] != null) {
+                            combines[j].setPath(maps[i].getPathMap()[0]);
 
-                            j = reduces.length;
+                            j = combines.length;
                         } else {
-                            if (reduces[j].getState() == Thread.State.NEW) {
-                                System.out.println("\n\nSE HA ASIGNADO A Reducer-0" + reduces[j].getIdReducer() + ":");
-                                for (int k = 0; k < reduces[j].getPath().size(); k++)
-                                    System.out.println("[File](" + (k + 1) + "):" + reduces[j].getPath().get(k));
+                            if (combines[j].getState() == Thread.State.NEW) {
+                                System.out.println("\n\nSE HA ASIGNADO A Reducer-0" + combines[j].getIdReducer() + ":");
+                                for (int k = 0; k < combines[j].getPath().size(); k++)
+                                    System.out.println("[File](" + (k + 1) + "):" + combines[j].getPath().get(k));
                                 sleep(SEGUNDOS_DE_FALLO*1000);
-                                reduces[j].start();
+                                combines[j].start();
                             }
                         }
                     }
-                    for (int j = reduces.length / 2; j < reduces.length; j++) {
-                        if (reduces[j].getCantidadMappers() < 2 * NUMERO_MAPPERS_POR_REDUCER && reduces[j] != null) {
-                            reduces[j].setPath(maps[i].getPathMap()[1]);
+                    for (int j = combines.length / 2; j < combines.length; j++) {
+                        if (combines[j].getCantidadMappers() < 2 * NUMERO_MAPPERS_POR_REDUCER && combines[j] != null) {
+                            combines[j].setPath(maps[i].getPathMap()[1]);
 
-                            j = reduces.length;
+                            j = combines.length;
                         } else {
-                            if (reduces[j].getState() == Thread.State.NEW) {
-                                System.out.println("\n\nSE HA ASIGNADO A Reducer-0" + reduces[j].getIdReducer() + ":");
-                                for (int k = 0; k < reduces[j].getPath().size(); k++)
-                                    System.out.println("[File](" + (k + 1) + "):" + reduces[j].getPath().get(k));
+                            if (combines[j].getState() == Thread.State.NEW) {
+                                System.out.println("\n\nSE HA ASIGNADO A Reducer-0" + combines[j].getIdReducer() + ":");
+                                for (int k = 0; k < combines[j].getPath().size(); k++)
+                                    System.out.println("[File](" + (k + 1) + "):" + combines[j].getPath().get(k));
                                 sleep(SEGUNDOS_DE_FALLO*1000);
-                                reduces[j].start();
+                                combines[j].start();
                             }
                         }
                     }
@@ -103,41 +103,41 @@ public class MapReduce {
                 }
                 sleep(SEGUNDOS_DE_FALLO*1000);
             }
-            for (int i = 0; i < reduces.length; i++) {
-                if (reduces[i].ESTADO == 2 && !reduces[i].LEIDO) {
-                    System.out.println("\n\n[Reducer-0" + reduces[i].getIdReducer() + "]: TERMINÓ:");
-                   reduces[i].imprimirResultado();
+            for (int i = 0; i < combines.length; i++) {
+                if (combines[i].ESTADO == 2 && !combines[i].LEIDO) {
+                    System.out.println("\n\n[Reducer-0" + combines[i].getIdReducer() + "]: TERMINÓ:");
+                   combines[i].imprimirResultado();
                     // imprimirLista(reducer[i].getPathReduce(), "Reducer-0"+reducer[i].getIdReducer());
                     sleep(SEGUNDOS_DE_FALLO*1000);
 //                    System.out.println("RESULTADO: [Reducer-0" + reducer[i].getIdReducer() + "]: *** " + reducer[i].getPathReduce());
-                    reduces[i].LEIDO = true;
+                    combines[i].LEIDO = true;
                     contador_reducers++;
                 }
 
             }
             if (END_MAPPERS) {
-                for (int i = 0; i < reduces.length; i++) {
-                    if (reduces[i].getState() == Thread.State.NEW) {
-                        System.out.println("\nSE HA ASIGNADO A Reducer-0" + reduces[i].getIdReducer() + ":");
-                        for (int k = 0; k < reduces[i].getPath().size(); k++)
-                            System.out.println("[File](" + (k + 1) + "):" + reduces[i].getPath().get(k));
+                for (int i = 0; i < combines.length; i++) {
+                    if (combines[i].getState() == Thread.State.NEW) {
+                        System.out.println("\nSE HA ASIGNADO A Reducer-0" + combines[i].getIdReducer() + ":");
+                        for (int k = 0; k < combines[i].getPath().size(); k++)
+                            System.out.println("[File](" + (k + 1) + "):" + combines[i].getPath().get(k));
                         sleep(SEGUNDOS_DE_FALLO * 1000);
-                        reduces[i].start();
+                        combines[i].start();
                     }
                 }
             }
 
             END_MAPPERS = contador_mappers == maps.length ? true : false;
-            END_REDUCERS = contador_reducers == reduces.length ? true : false;
+            END_REDUCERS = contador_reducers == combines.length ? true : false;
         }
-        combinarFinal();
+        combinarReduce();
     }
 
     private static void crearHilosReducers() {
         int aux = numeroArchivosGenerados % NUMERO_MAPPERS_POR_REDUCER != 0 ? 1 : 0;
-        reduces = new Combine[numeroArchivosGenerados / NUMERO_MAPPERS_POR_REDUCER + aux];
-        for (int i = 0; i < reduces.length; i++)
-            reduces[i] = new Combine(fallosReducer(), i + 1);
+        combines = new Combine[numeroArchivosGenerados / NUMERO_MAPPERS_POR_REDUCER + aux];
+        for (int i = 0; i < combines.length; i++)
+            combines[i] = new Combine(fallosCombine(), i + 1);
     
     }
      private static void crearHilosMap() {
@@ -210,10 +210,10 @@ public class MapReduce {
 
     }
      
-     private static boolean fallosReducer() {
+     private static boolean fallosCombine() {
 
-        if (FALLOS_REDUCER > 0) {
-            FALLOS_REDUCER--;
+        if (FALLOS_COMBINE > 0) {
+            FALLOS_COMBINE--;
             return false;
         } else return true;
 
@@ -223,12 +223,12 @@ public class MapReduce {
         for (int i = 0; i < hilos.length; i++)
             hilos[i].start();
     }
-    private static void combinarFinal() {
+    private static void combinarReduce() {
 
         List<String> aux = new ArrayList<>();
 
-        for (int i = 0; i < reduces.length; i++)
-            aux.addAll(leerFinal(reduces[i].toString()));
+        for (int i = 0; i < combines.length; i++)
+            aux.addAll(leerFinal(combines[i].toString()));
 
         combinarFinal(aux);
     }
@@ -278,13 +278,13 @@ public class MapReduce {
 
         }
         if (palabraActual == palabra) aux.add(String.format("%s\t%d", palabraActual, contador));
-        escribirFinal(aux);
+        escribirReduce(aux);
 
     }
 
-    private static void escribirFinal(List<String> lista) {
+    private static void escribirReduce(List<String> lista) {
         try {
-            File tempFile = File.createTempFile("MAP-REDUCE", ".txt", Paths.get("resultado").toFile());
+            File tempFile = File.createTempFile("MAP-REDUCE", ".txt", Paths.get("reduce").toFile());
             FileWriter archivoWrite = new FileWriter(tempFile);
             for (int i = 0; i < lista.size(); i++)
                 archivoWrite.write(lista.get(i) + "\n");
@@ -295,12 +295,12 @@ public class MapReduce {
             e.printStackTrace();
         }
         finally {
-            imprimirFinal(lista);
+            imprimirReduce(lista);
         }
     }
-    public static void imprimirFinal(List<String> lista){
+    public static void imprimirReduce(List<String> lista){
         String [] aux;
-        System.out.println("\n\nRESULTADO FINAL [MAPREDUCE]: \n");
+        Util.println("RESULTADO FINAL [MAPREDUCE]: ");
         for(int i=0; i < lista.size(); i++){
             aux = lista.get(i).split("\t");
             System.out.printf("< %-15s %3d > \t",aux[0], Integer.parseInt(aux[1]));
