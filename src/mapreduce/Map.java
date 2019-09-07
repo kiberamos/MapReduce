@@ -31,7 +31,7 @@ public class Map extends Thread {
 
 
     private String path;
-    private String [] pathMap = new String[2];
+    private String pathMap ;
     private List<String> listaPalabras = new ArrayList<String>();
     private int idMap = -888;
 
@@ -45,7 +45,7 @@ public class Map extends Thread {
     @Override
     public void run(){
         ESTADO = 1;
-        System.out.println("\n[Mapper-0"+idMap+"] HA INICIADO...\n");
+        Util.println("\n[Map -"+idMap+"] HA INICIADO...");
         funcionMapper(path);
     }
 
@@ -74,14 +74,14 @@ public class Map extends Thread {
             }
         }else {
 
-            System.out.println("\n(ERROR-M): [Mapper-0" + idMap + "]: Ha presentado una falla, se reiniciará en "+MapReduce.SEGUNDOS_DE_FALLO*2+" segundos\n");
+            Util.err("(ERROR-M): [Mapper-0" + idMap + "]: Ha presentado una falla, se reiniciará en "+MapReduce.SEGUNDOS_DE_FALLO*2+" segundos\n");
             try {
                 sleep(MapReduce.SEGUNDOS_DE_FALLO*2*1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }finally {
                 FLAG = 0;
-                System.out.println("\n[Mapper-0" + idMap + "]: SE HA REINICIADO CON ÉXITO\n");
+                Util.println("[Mapper-0" + idMap + "]: SE HA REINICIADO CON ÉXITO");
                 funcionMapper(file);
             }
 
@@ -92,23 +92,19 @@ public class Map extends Thread {
     private void escribir(){
 
         try {
-            File tempFile = File.createTempFile("Mapper0"+idMap+"_A-M_" + idMap,".txt", Paths.get("temp").toFile());
-            File tempFile2 = File.createTempFile("Mapper0"+idMap+"_N-Z_" + idMap,".txt", Paths.get("temp").toFile());
-
+            File tempFile = File.createTempFile("Mapper"+idMap+ idMap,".txt", Paths.get("temp").toFile());
+            
             FileWriter archivoWriter = new FileWriter(tempFile);
-            FileWriter archivoWriter2 = new FileWriter(tempFile2);
+            
 
             for (int i =0; i < listaPalabras.size(); i++){
-                if ((listaPalabras.get(i).compareToIgnoreCase("m") <= 0)) {
-                    archivoWriter.write(listaPalabras.get(i)+"\t"+1+",");
-                } else {
-                    archivoWriter2.write(listaPalabras.get(i)+"\t"+1+",");
-                }
+               
+               archivoWriter.write(listaPalabras.get(i)+"\t"+1+",");
+               
             }
             archivoWriter.close();
-            archivoWriter2.close();
-            pathMap[0] = tempFile.getPath();
-            pathMap[1] = tempFile2.getPath();
+            
+            pathMap = tempFile.getPath();
             Util.println("TERMINO UN HILO Mapper0"+idMap);
         } catch (IOException e) {
             e.printStackTrace();
@@ -126,7 +122,7 @@ public class Map extends Thread {
         return idMap;
     }
 
-    public String[] getPathMap() {
+    public String getPathMap() {
         return pathMap;
     }
 

@@ -35,6 +35,9 @@ public class Util {
     public static void println(String linea){
         System.out.println(linea);
     }
+    public static void err(String linea){
+        System.err.println(linea);
+    }
     /**
      * Imprime en pantalla
      * @param listaPalabras 
