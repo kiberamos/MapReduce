@@ -5,17 +5,40 @@
  */
 package mapreduce;
 
+import static java.lang.Thread.sleep;
+
 /**
  *
  * @author wcade
  */
 public class MapReduce {
 
+    private static String numeroArchivosGenerados;
+
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        // TODO code application logic here
+    
+    public static void main(String[] args) throws InterruptedException {
+
+        
+        Util.println("Se han creado  Mappers");
+        crearHilosReducers();
+        Util.println("Se han creado  Reducers\n******************************");
+        crearHilosMap();
+        
+
+    }
+
+    private static void crearHilosReducers() {
+        
+        Reduce r = new Reduce();
+    
+    }
+     private static void crearHilosMap() {
+
+        Map m = new Map();
+
     }
     
 }
