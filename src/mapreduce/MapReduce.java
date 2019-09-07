@@ -30,11 +30,14 @@ public class MapReduce {
      * contador
      */
     static int numeroArchivosGenerados = 0;
-    final static int NUMERO_PARRAFOS = 25;
+    final static int NUMERO_PARRAFOS = 50;
+    final static int NUMERO_MAPPERS_POR_REDUCER = 3;
     static int FALLOS_MAP = 2;
+    static int FALLOS_REDUCER = 2;
     public static int SEGUNDOS_DE_FALLO = 2;
 
     static Map[] maps;
+    static Reduce[] reduces;
     /**
      * @param args the command line arguments
      */
@@ -44,11 +47,16 @@ public class MapReduce {
         Util.println("Se han creado  Reducers");
         System.out.println("--->"+archivosPath);        
         crearHilosMap();
+        crearHilosReducers();
+
+        
     }
 
     private static void crearHilosReducers() {
-        
-        Reduce r = new Reduce();
+        int aux = numeroArchivosGenerados % NUMERO_MAPPERS_POR_REDUCER != 0 ? 1 : 0;
+        reduces = new Reduce[numeroArchivosGenerados / NUMERO_MAPPERS_POR_REDUCER + aux];
+        for (int i = 0; i < reduces.length; i++)
+            reduces[i] = new Reduce(fallosReducer(), i + 1);
     
     }
      private static void crearHilosMap() {
@@ -121,6 +129,15 @@ public class MapReduce {
 
     }
      
+     private static boolean fallosReducer() {
+
+        if (FALLOS_REDUCER > 0) {
+            FALLOS_REDUCER--;
+            return false;
+        } else return true;
+
+    }
+
      private static void iniciarHilos(Thread[] hilos) {
         for (int i = 0; i < hilos.length; i++)
             hilos[i].start();
